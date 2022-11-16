@@ -1,8 +1,8 @@
 # coding: utf-8
 # license: GPLv3
 
-from solar_project.solar_objects import Star, Planet
-from solar_project.solar_vis import DrawableObject
+from solar_objects import Star, Planet
+from solar_vis import DrawableObject
 
 
 def read_space_objects_data_from_file(input_filename):
