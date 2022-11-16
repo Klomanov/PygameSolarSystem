@@ -1,8 +1,9 @@
 # coding: utf-8
 # license: GPLv3
 
-from solar_objects import Star, Planet
-from solar_vis import DrawableObject
+from solar_project.solar_objects import Star, Planet
+from solar_project.solar_vis import DrawableObject
+
 
 def read_space_objects_data_from_file(input_filename):
     """Cчитывает данные о космических объектах из файла, создаёт сами объекты
@@ -113,7 +114,9 @@ def write_space_objects_data_to_file(output_filename, space_objects):
     """
     with open(output_filename, 'w') as out_file:
         for obj in space_objects:
-            print(out_file, "%s %d %s %f" % ('1', 2, '3', 4.5))
+            s = str(obj.type) + ' ' + str(obj.R) + ' ' + str(obj.color) + ' ' + str(obj.m) + ' ' + str(obj.x) + ' ' + \
+                str(obj.y) + ' ' + str(obj.Vx) + ' ' + str(obj.Vy)
+            print(out_file, s)
             # FIXME!
 
 
