@@ -9,6 +9,7 @@ from solar_objects import *
 import thorpy
 import time
 import numpy as np
+import matplotlib.pyplot as plt
 
 timer = None
 
@@ -17,16 +18,23 @@ alive = True
 perform_execution = False
 """Флаг цикличности выполнения расчёта"""
 
+input_file = "double_star.txt"
+"""Файл с исходными данными"""
+
+output_file = "stats.txt"
+"""Флаг цикличности выполнения расчёта"""
+
 model_time = 0
 """Физическое время от начала расчёта.
 Тип: float"""
 
-time_scale = 1000.0
+time_scale = 0.000000001
 """Шаг по времени при моделировании.
 Тип: float"""
 
 space_objects = []
 """Список космических объектов."""
+
 
 def execution(delta):
     """Функция исполнения -- выполняется циклически, вызывая обработку всех небесных тел,
@@ -47,9 +55,11 @@ def start_execution():
     global perform_execution
     perform_execution = True
 
+
 def pause_execution():
     global perform_execution
     perform_execution = False
+
 
 def stop_execution():
     """Обработчик события нажатия на кнопку Start.
@@ -57,6 +67,7 @@ def stop_execution():
     """
     global alive
     alive = False
+
 
 def open_file():
     """Открывает диалоговое окно выбора имени файла и вызывает
@@ -68,10 +79,22 @@ def open_file():
     global model_time
 
     model_time = 0.0
-    in_filename = "solar_system.txt"
+    in_filename = input_file
     space_objects = read_space_objects_data_from_file(in_filename)
     max_distance = max([max(abs(obj.obj.x), abs(obj.obj.y)) for obj in space_objects])
     calculate_scale_factor(max_distance)
+
+
+def write_stats():
+    global last_stats_time
+    if time.time() - last_stats_time > 1000:
+        write_space_objects_data_to_file(output_file)
+        last_stats_time = time.time()
+
+
+def make_plots():
+    pass
+
 
 def handle_events(events, menu):
     global alive
@@ -80,12 +103,15 @@ def handle_events(events, menu):
         if event.type == pg.QUIT:
             alive = False
 
+
 def slider_to_real(val):
     return np.exp(5 + val)
+
 
 def slider_reaction(event):
     global time_scale
     time_scale = slider_to_real(event.el.get_value())
+
 
 def init_ui(screen):
     global browser
@@ -94,38 +120,41 @@ def init_ui(screen):
     button_stop = thorpy.make_button("Quit", func=stop_execution)
     button_pause = thorpy.make_button("Pause", func=pause_execution)
     button_play = thorpy.make_button("Play", func=start_execution)
+    button_func = thorpy.make_button("Make plots", func=make_plots)
     timer = thorpy.OneLineText("Seconds passed")
 
     button_load = thorpy.make_button(text="Load a file", func=open_file)
 
     box = thorpy.Box(elements=[
         slider,
-        button_pause, 
-        button_stop, 
-        button_play, 
+        button_pause,
+        button_stop,
+        button_play,
         button_load,
+        button_func,
         timer])
     reaction1 = thorpy.Reaction(reacts_to=thorpy.constants.THORPY_EVENT,
                                 reac_func=slider_reaction,
-                                event_args={"id":thorpy.constants.EVENT_SLIDE},
+                                event_args={"id": thorpy.constants.EVENT_SLIDE},
                                 params={},
                                 reac_name="slider reaction")
     box.add_reaction(reaction1)
-    
+
     menu = thorpy.Menu(box)
     for element in menu.get_population():
         element.surface = screen
 
-    box.set_topleft((0,0))
+    box.set_topleft((0, 0))
     box.blit()
     box.update()
     return menu, box, timer
+
 
 def main():
     """Главная функция главного модуля.
     Создаёт объекты графического дизайна библиотеки tkinter: окно, холст, фрейм с кнопками, кнопки.
     """
-    
+
     global physical_time
     global displayed_time
     global time_step
@@ -134,18 +163,21 @@ def main():
     global start_button
     global perform_execution
     global timer
+    global last_stats_time
 
     print('Modelling started!')
     physical_time = 0
+    last_stats_time = 0
 
     pg.init()
-    
-    width = 1000
-    height = 900
+
+    width = 1200
+    height = 800
     screen = pg.display.set_mode((width, height))
     last_time = time.perf_counter()
     drawer = Drawer(screen)
     menu, box, timer = init_ui(screen)
+    write_space_objects_data_to_file(output_file, [], "w")
     perform_execution = True
 
     while alive:
@@ -158,9 +190,11 @@ def main():
 
         last_time = cur_time
         drawer.update(space_objects, box)
+        write_space_objects_data_to_file(output_file, space_objects, "a")
         time.sleep(1.0 / 60)
 
     print('Modelling finished!')
+
 
 if __name__ == "__main__":
     main()

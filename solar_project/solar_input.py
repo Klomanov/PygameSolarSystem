@@ -97,7 +97,7 @@ def parse_planet_parameters(line, planet):
     planet.Vy = float(tokens[7])
 
 
-def write_space_objects_data_to_file(output_filename, space_objects):
+def write_space_objects_data_to_file(output_filename, space_objects, mode):
     """Сохраняет данные о космических объектах в файл.
 
     Строки должны иметь следующий формат:
@@ -112,12 +112,20 @@ def write_space_objects_data_to_file(output_filename, space_objects):
 
     **space_objects** — список объектов планет и звёзд
     """
-    with open(output_filename, 'w') as out_file:
+    with open(output_filename, mode) as out_file:
         for obj in space_objects:
-            s = str(obj.type) + ' ' + str(obj.R) + ' ' + str(obj.color) + ' ' + str(obj.m) + ' ' + str(obj.x) + ' ' + \
-                str(obj.y) + ' ' + str(obj.Vx) + ' ' + str(obj.Vy)
-            print(out_file, s)
-            # FIXME!
+            o = obj.obj
+            s = str(o.type) + ' ' + \
+                str(o.R) + ' ' + \
+                str(o.color) + ' ' + \
+                str(o.m) + ' ' + \
+                str(o.x) + ' ' + \
+                str(o.y) + ' ' + \
+                str(o.Vx) + ' ' + \
+                str(o.Vy) + '\n'
+            out_file.write(s)
+        if len(space_objects) != 0:
+            out_file.write('-----------------------\n')
 
 
 if __name__ == "__main__":
